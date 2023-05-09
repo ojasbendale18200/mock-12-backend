@@ -5,7 +5,7 @@ const employeeRouter = Router();
 
 // GET
 employeeRouter.get("/employee", async (req, res) => {
-  const { department, page = 1, salary = "asc", firstname } = req.query;
+  const { department, page = 1, salary, firstname } = req.query;
   let query = {};
 
   if (
@@ -15,6 +15,9 @@ employeeRouter.get("/employee", async (req, res) => {
   ) {
     query.department = department;
   }
+  // if (salary) {
+  //   query.salary = salary;
+  // }
 
   if (firstname) {
     query.firstname = { firstname: { $regex: new RegExp(firstname, "i") } };
@@ -25,11 +28,19 @@ employeeRouter.get("/employee", async (req, res) => {
   const skip = (pageNo - 1) * limit;
 
   try {
-    const employee = await EmployeeModel.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ salary: 1 });
-    res.status(200).send(employee);
+    if (salary === "asc") {
+      const employee = await EmployeeModel.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({ salary: 1 });
+      res.status(200).send(employee);
+    } else if (salary === "desc") {
+      const employee = await EmployeeModel.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({ salary: -1 });
+      res.status(200).send(employee);
+    }
   } catch (error) {
     res.status(400).send({ message: error });
   }
